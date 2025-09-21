@@ -35,120 +35,66 @@ DATA_DICTIONARY_PROVIDERS = """
 ]
 """
 
+DATA_DICTIONARY_CLAIMS = """
+[
+  {"name":"RX_CLAIM_NBR","type":"STRING","desc":"Unique prescription claim identifier.","example":"e43c705186b85dcfd8b3e097a5d1b0f9f614c9203d75fe4a69e770138e0c47c7"},
+  {"name":"PATIENT_ID","type":"STRING","desc":"Unique patient identifier.","example":"563412b0-6a48-46e2-bb0c-9f45b45c0d9e"},
+  {"name":"SERVICE_DATE_DD","type":"DATE","desc":"Date when the prescription was dispensed.","example":"2023-10-30"},
+  {"name":"DATE_PRESCRIPTION_WRITTEN_DD","type":"DATE","desc":"Date when the prescription was written.","example":"2023-10-16"},
+  {"name":"PRESCRIBER_NPI_NBR","type":"STRING","desc":"NPI number of the prescribing provider.","example":"1033439047"},
+  {"name":"NDC","type":"STRING","desc":"National Drug Code identifier.","example":"00002145701"},
+  {"name":"NDC_DESC","type":"STRING","desc":"Description of the drug product.","example":"Mounjaro Subcutaneous Solution Auto-Injector 15 Mg/0.5Ml"},
+  {"name":"NDC_GENERIC_NM","type":"STRING","desc":"Generic name of the drug.","example":"Tirzepatide"},
+  {"name":"NDC_PREFERRED_BRAND_NM","type":"STRING","desc":"Preferred brand name of the drug.","example":"Mounjaro"},
+  {"name":"PHARMACY_NPI_NBR","type":"STRING","desc":"NPI number of the dispensing pharmacy.","example":"1234567890"},
+  {"name":"PHARMACY_NPI_NM","type":"STRING","desc":"Name of the dispensing pharmacy.","example":"CVS Pharmacy"},
+  {"name":"PAYER_PAYER_NM","type":"STRING","desc":"Name of the insurance payer.","example":"Aetna"},
+  {"name":"TOTAL_PAID_AMT","type":"FLOAT","desc":"Total amount paid for the prescription.","example":"1250.75"},
+  {"name":"PATIENT_TO_PAY_AMT","type":"FLOAT","desc":"Amount the patient paid out of pocket.","example":"25.00"},
+  {"name":"DISPENSED_QUANTITY_VAL","type":"FLOAT","desc":"Quantity of drug dispensed.","example":"1.0"},
+  {"name":"DAYS_SUPPLY_VAL","type":"INT","desc":"Number of days the prescription should last.","example":"30"}
+]
+"""
+
 PLAN_SCHEMA = """
 {
   "type": "object",
-  "required": ["filters", "projection", "limit"],
+  "required": ["query_type", "filters", "projection", "limit"],
   "properties": {
+    "query_type": {
+      "type": "string",
+      "enum": ["hcp", "claims_by_doctor", "claims_only", "hcp_with_claims"]
+    },
     "filters": {
       "type": "object",
       "properties": {
         "specialty_any": { "type": ["array","null"], "items": { "type": "string" } },
-        "specialty_all": { "type": ["array","null"], "items": { "type": "string" } },
-        "specialty_exclude": { "type": ["array","null"], "items": { "type": "string" } },
         "state_any": { "type": ["array","null"], "items": { "type": "string" } },
-        "state_all": { "type": ["array","null"], "items": { "type": "string" } },
-        "state_exclude": { "type": ["array","null"], "items": { "type": "string" } },
         "hospital_any": { "type": ["array","null"], "items": { "type": "string" } },
-        "hospital_all": { "type": ["array","null"], "items": { "type": "string" } },
-        "hospital_exclude": { "type": ["array","null"], "items": { "type": "string" } },
         "system_any": { "type": ["array","null"], "items": { "type": "string" } },
-        "system_all": { "type": ["array","null"], "items": { "type": "string" } },
-        "system_exclude": { "type": ["array","null"], "items": { "type": "string" } },
         "org_type_any": { "type": ["array","null"], "items": { "type": "string" } },
-        "org_type_exclude": { "type": ["array","null"], "items": { "type": "string" } },
+        "name_contains": { "type": ["array","null"], "items": { "type": "string" } },
         "publications_min": { "type": ["integer","null"] },
         "publications_max": { "type": ["integer","null"] },
-        "publications_range": { "type": ["array","null"], "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 },
         "clinical_trials_min": { "type": ["integer","null"] },
-        "clinical_trials_max": { "type": ["integer","null"] },
-        "clinical_trials_range": { "type": ["array","null"], "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 },
-        "payments_min": { "type": ["integer","null"] },
-        "payments_max": { "type": ["integer","null"] },
-        "payments_range": { "type": ["array","null"], "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 },
         "has_linkedin": { "type": ["boolean","null"] },
-        "has_twitter": { "type": ["boolean","null"] },
-        "has_youtube": { "type": ["boolean","null"] },
-        "has_podcast": { "type": ["boolean","null"] },
-        "social_media_any": { "type": ["array","null"], "items": { "type": "string" } },
-        "social_media_all": { "type": ["array","null"], "items": { "type": "string" } },
-        "gender": { "type": ["string","null"] },
-        "name_contains": { "type": ["array","null"], "items": { "type": "string" } },
-        "email_domain": { "type": ["array","null"], "items": { "type": "string" } },
-        "conditions_any": { "type": ["array","null"], "items": { "type": "string" } },
-        "conditions_all": { "type": ["array","null"], "items": { "type": "string" } },
-        "conditions_exclude": { "type": ["array","null"], "items": { "type": "string" } },
-        "top_percentile_publications": { "type": ["number","null"] },
-        "top_percentile_trials": { "type": ["number","null"] },
-        "academic_only": { "type": ["boolean","null"] },
-        "community_only": { "type": ["boolean","null"] },
-        "rural_states_only": { "type": ["boolean","null"] },
-        "text_search": { "type": ["string","array","null"] }
-      }
+        "has_twitter": { "type": ["boolean","null"] }
+      },
+      "additionalProperties": false
     },
     "claims_filters": {
       "type": ["object","null"],
       "properties": {
-        "drugs_any": { "type": ["array","null"], "items": { "type": "string" } },
-        "drugs_all": { "type": ["array","null"], "items": { "type": "string" } },
-        "drugs_exclude": { "type": ["array","null"], "items": { "type": "string" } },
-        "drug_classes_any": { "type": ["array","null"], "items": { "type": "string" } },
-        "drug_groups_any": { "type": ["array","null"], "items": { "type": "string" } },
-        "date_range_months": { "type": ["integer","null"] },
-        "date_range_start": { "type": ["string","null"] },
-        "date_range_end": { "type": ["string","null"] },
-        "year": { "type": ["integer","null"] },
-        "quarter": { "type": ["integer","null"] },
-        "month": { "type": ["integer","null"] },
-        "weekday": { "type": ["integer","null"] },
-        "prescription_count_min": { "type": ["integer","null"] },
-        "prescription_count_max": { "type": ["integer","null"] },
-        "patient_count_min": { "type": ["integer","null"] },
-        "patient_count_max": { "type": ["integer","null"] },
-        "total_cost_min": { "type": ["number","null"] },
-        "total_cost_max": { "type": ["number","null"] },
-        "quantity_min": { "type": ["number","null"] },
-        "quantity_max": { "type": ["number","null"] },
-        "days_supply_min": { "type": ["integer","null"] },
-        "days_supply_max": { "type": ["integer","null"] },
-        "cost_min": { "type": ["number","null"] },
-        "cost_max": { "type": ["number","null"] },
-        "patient_pay_min": { "type": ["number","null"] },
-        "patient_pay_max": { "type": ["number","null"] },
-        "payer_types": { "type": ["array","null"], "items": { "type": "string" } },
-        "pharmacy_type": { "type": ["string","null"] },
-        "state_pharmacy": { "type": ["string","null"] },
-        "dispensed_only": { "type": ["boolean","null"] },
-        "include_rejected": { "type": ["boolean","null"] },
-        "negate": { "type": ["boolean","null"] }
-      }
-    },
-    "aggregation": {
-      "type": ["object","null"],
-      "properties": {
-        "group_by": { "type": ["array","null"], "items": { "type": "string" } },
-        "count_doctors": { "type": ["boolean","null"] },
-        "avg_publications": { "type": ["boolean","null"] },
-        "avg_trials": { "type": ["boolean","null"] },
-        "total_prescriptions": { "type": ["boolean","null"] },
-        "total_patients": { "type": ["boolean","null"] }
-      }
-    },
-    "analytics": {
-      "type": ["object","null"],
-      "properties": {
-        "calculate_percentiles": { "type": ["boolean","null"] },
-        "calculate_rankings": { "type": ["boolean","null"] },
-        "calculate_scores": { "type": ["boolean","null"] },
-        "add_categories": { "type": ["boolean","null"] }
-      }
+        "drug_any": { "type": ["array","null"], "items": { "type": "string" } },
+        "pharmacy_any": { "type": ["array","null"], "items": { "type": "string" } },
+        "payer_any": { "type": ["array","null"], "items": { "type": "string" } },
+        "date_range_months": { "type": ["integer","null"] }
+      },
+      "additionalProperties": false
     },
     "projection": {
       "type": "array",
-      "items": {
-        "type": "string",
-        "enum": ["npi","name","full_name","states","specialties","hospital_names","system_names","num_publications","num_clinical_trials","num_payments","org_type","total_prescriptions","unique_patients","total_cost","avg_cost_per_prescription","unique_drugs","first_prescription_date","last_prescription_date","publication_rank","trial_rank","composite_score","publication_category","prescribing_category"]
-      }
+      "items": { "type": "string" }
     },
     "order_by": {
       "type": ["array","null"],
@@ -156,317 +102,113 @@ PLAN_SCHEMA = """
     },
     "limit": { "type": "integer" },
     "plan_notes": { "type": ["string","null"] }
-  }
+  },
+  "additionalProperties": false
 }
 """
-DRUG_MAPPINGS = {
-    "humira": ["adalimumab", "humira"],
-    "rinvoq": ["upadacitinib", "rinvoq"], 
-    "skyrizi": ["risankizumab", "skyrizi"],
-    "mounjaro": ["tirzepatide", "mounjaro"],
-    "ozempic": ["semaglutide", "ozempic"],
-    "remicade": ["infliximab", "remicade"]
-}
 
 SYSTEM_PROMPT = f"""
-You are an advanced planning agent for a comprehensive Healthcare Provider (HCP) targeting system. Convert ANY natural language query into structured JSON plans that can handle ALL POSSIBLE data questions about HCP and Claims data with PERFECT accuracy.
+You are an intelligent planning agent for healthcare data analysis. You have access to TWO datasets that can be joined:
 
-COMPREHENSIVE CAPABILITIES - HANDLE EVERY EDGE CASE:
-1. HCP Filtering: specialty (any/all/exclude), location (states/rural/academic), publications/trials (ranges/percentiles), social media (any/all platforms), gender, conditions (semantic matching), affiliations (academic/community), org types
-2. Claims Analysis: drugs (brand/generic/classes), dates (relative/absolute/quarters), costs (total/patient/ranges), quantities, payers (Medicare/commercial/all types), pharmacies (chains/independents), patient demographics
-3. Advanced Logic: negation (did NOT prescribe), complex boolean (AND/OR/NOT), ranges, percentiles, text search with semantic capabilities
-4. Analytics: rankings, scores, categories, aggregations by any dimension, percentiles, distributions
-5. Temporal: last N months/days, specific date ranges, years, quarters, months, weekdays, relative periods
-6. Edge Cases: null handling, zero values, empty results, multiple conditions, complex combinations
+1. HCP Dataset (providers.csv) - Healthcare provider information
+2. Claims Dataset (claims.csv) - Prescription claim records
 
-QUERY PROCESSING RULES - HANDLE EVERY POSSIBLE CASE:
+KEY RELATIONSHIP: These datasets are linked by NPI numbers:
+- HCP Dataset: "type_1_npi" field contains provider NPI
+- Claims Dataset: "PRESCRIBER_NPI_NBR" field contains provider NPI
 
-1. TEMPORAL EXPRESSIONS:
-   - "last 3 months" → date_range_months: 3
-   - "past 6 months" → date_range_months: 6  
-   - "last year" → date_range_months: 12
-   - "in 2023" → year: 2023
-   - "Q1" → quarter: 1
-   - "January" → month: 1
-   - "weekdays" → weekday: 0-4 (Mon-Fri)
-   - "specific date range" → date_range_start/end
+INTELLIGENT QUERY PROCESSING:
+When a user asks for claims data related to a doctor:
+1. UNDERSTAND: The user wants claims data, but identifies doctor by name
+2. INFER: Must first find doctor in HCP data to get their NPI
+3. CONNECT: Use that NPI to find claims in Claims data
+4. RETURN: The claims data for that doctor
 
-2. DRUG_RECOGNITION:
-   Map drug names using: {DRUG_MAPPINGS}
-   Include brand and generic names in drugs_any.
+QUERY TYPE DETECTION (be intelligent about the user's intent):
+- "claims for [doctor name]" → query_type: "claims_by_doctor" (find doctor first, then their claims)
+- "claims by [doctor name]" → query_type: "claims_by_doctor" 
+- "all [drug] claims" → query_type: "claims_only" (direct claims query)
+- "doctors with claims at [pharmacy]" → query_type: "hcp_with_claims" (find claims first, then doctors)
+- "doctors who prescribed [drug]" → query_type: "hcp_with_claims" (find claims first, then doctors)
+- Standard doctor queries → query_type: "hcp"
 
-3. PRESCRIPTION PATTERNS:
-   - "prescribed X at least once" → prescription_count_min: 1
-   - "prescribed X more than 50 times" → prescription_count_min: 51
-   - "prescribed X less than 10 times" → prescription_count_max: 9
-   - "did not prescribe X" → negate: true, drugs_any: [X]
-   - "prescribed X but not Y" → drugs_any: [X], drugs_exclude: [Y]
-   - "prescribed both X and Y" → drugs_all: [X, Y]
+INTELLIGENT FILTERING:
+- For claims_by_doctor: Use doctor name to find NPI, then find claims
+- For hcp_with_claims: Filter claims first, then find matching doctors
+- For claims_only: Direct claims filtering
+- Extract actual values from queries (names, drugs, pharmacies, etc.)
 
-4. SPECIALTY LOGIC:
-   - "neurologists" → specialty_any: ["neurology", "neurological surgery"]
-   - "only rheumatologists" → specialty_all: ["rheumatology"]
-   - "not cardiologists" → specialty_exclude: ["cardiology"]
+RULES:
+- Output ONLY valid JSON conforming to the Plan Schema
+- Use the data dictionaries to understand available fields
+- Be intelligent about connecting the datasets via NPI
+- Extract actual names/values from the query
+- Set appropriate projections based on query type
 
-5. LOCATION LOGIC:
-   - "in California" → state_any: ["California"]
-   - "in CA and NY" → state_any: ["California", "New York"]
-   - "not in Texas" → state_exclude: ["Texas"]
-   - "rural states" → rural_states_only: true
+EXAMPLES:
 
-6. PUBLICATION/TRIAL LOGIC:
-   - "more than 50 publications" → publications_min: 51
-   - "less than 10 publications" → publications_max: 9
-   - "between 20 and 100 publications" → publications_range: [20, 100]
-   - "top 10% by publications" → top_percentile_publications: 10
-
-7. COST/FINANCIAL LOGIC:
-   - "total cost over $1000" → total_cost_min: 1000
-   - "patient paid less than $50" → patient_pay_max: 49
-   - "prescription cost between $100-500" → cost_min: 100, cost_max: 500
-
-8. PAYER LOGIC:
-   - "Medicare patients" → payer_types: ["medicare"]
-   - "commercial insurance" → payer_types: ["commercial"]
-   - "cash patients" → payer_types: ["cash"]
-
-9. SOCIAL MEDIA LOGIC:
-   - "with LinkedIn" → has_linkedin: true
-   - "with social media presence" → social_media_any: ["linkedin", "twitter"]
-   - "with all social platforms" → social_media_all: ["linkedin", "twitter", "youtube"]
-
-10. ACADEMIC/PRACTICE SETTING:
-    - "academic doctors" → academic_only: true
-    - "community practice" → community_only: true
-    - "university affiliated" → text_search: "university"
-
-11. ADVANCED ANALYTICS:
-    - "rank by publications" → analytics: {{"calculate_rankings": true}}
-    - "top performers" → analytics: {{"calculate_scores": true}}
-    - "categorize by activity" → analytics: {{"add_categories": true}}
-
-12. AGGREGATION PATTERNS:
-    - "by specialty" → aggregation: {{"group_by": ["specialties"], "count_doctors": true}}
-    - "average publications by state" → aggregation: {{"group_by": ["states"], "avg_publications": true}}
-
-13. NEGATION HANDLING:
-    - "did not prescribe" → negate: true in claims_filters
-    - "exclude doctors who" → use _exclude filters
-    - "without" → set boolean fields to false
-
-14. TEXT SEARCH:
-    - "research on Alzheimer's" → text_search: "alzheimer"
-    - "Mayo Clinic doctors" → text_search: "mayo clinic"
-
-15. EDGE CASES AND SPECIAL HANDLING:
-    - "no publications" → publications_max: 0
-    - "never prescribed" → prescription_count_max: 0, negate: false
-    - "any specialty" → omit specialty filters entirely
-    - "all doctors" → minimal filters, high limit
-    - "top doctors" → analytics: {{"calculate_rankings": true}}, order by relevant metric
-    - "key opinion leaders" → publications_min: 50, has_linkedin: true
-    - "rural doctors" → rural_states_only: true
-    - "academic vs community" → academic_only: true OR community_only: true
-    - "new prescribers" → date_range_months: 3, prescription_count_min: 1
-    - "high volume prescribers" → prescription_count_min: 100
-    - "cost-conscious doctors" → patient_pay_max: 50
-    - "Medicare specialists" → payer_types: ["medicare"]
-    - "research-active doctors" → clinical_trials_min: 1, publications_min: 10
-
-16. COMPLEX QUERY PATTERNS:
-    - "Doctors who X but not Y" → use exclude filters or negate
-    - "Top 10 by metric" → analytics + order_by + limit: 10
-    - "Doctors similar to X" → text_search with semantic matching
-    - "Trending prescribers" → date comparisons with multiple ranges
-    - "Cost outliers" → percentile filters with cost analysis
-    - "Geographic clustering" → aggregation by states/regions
-    - "Specialty cross-referencing" → multiple specialty filters
-    - "Longitudinal analysis" → multiple date ranges with comparison
-
-OUTPUT REQUIREMENTS - PERFECT ACCURACY REQUIRED:
-- ALWAYS return valid JSON conforming to the Enhanced Plan Schema
-- Use null for unspecified filters, never omit required fields
-- Handle ANY possible query about the data with complete accuracy
-- Include comprehensive plan_notes explaining the query interpretation
-- For prescription queries, populate claims_filters with ALL relevant criteria
-- For HCP-only queries, set claims_filters to null
-- Use appropriate aggregation and analytics for complex queries
-- NEVER make assumptions - if unclear, use broadest reasonable interpretation
-- Handle typos and variations in drug/specialty names using mappings
-- Support both simple and complex multi-part queries
-
-COMPREHENSIVE EXAMPLES - COVERING ALL QUERY TYPES:
-
-Query: "Top 10 neurologists in California with most publications who prescribed Humira in last 6 months"
-Response:
+Query: "Top 5 neurologists with most publications"
 {{
+  "query_type": "hcp",
   "filters": {{
-    "specialty_any": ["neurology", "neurological surgery"],
-    "state_any": ["California"]
+    "specialty_any": ["neurology", "neurological surgery"]
   }},
-  "claims_filters": {{
-    "drugs_any": ["adalimumab", "humira"],
-    "date_range_months": 6,
-    "prescription_count_min": 1
-  }},
-  "analytics": {{"calculate_rankings": true}},
-  "projection": ["npi", "name", "specialties", "num_publications", "total_prescriptions", "publication_rank"],
+  "claims_filters": null,
+  "projection": ["npi", "name", "specialties", "num_publications"],
   "order_by": ["num_publications DESC"],
-  "limit": 10,
-  "plan_notes": "Top 10 CA neurologists by publications who prescribed Humira in last 6 months"
+  "limit": 5,
+  "plan_notes": "Top 5 neurologists by publication count"
 }}
 
-Query: "Academic rheumatologists with LinkedIn who did not prescribe expensive biologics in the last year"
-Response:
+Query: "List all claims by ANDREW GROSSBACH"
 {{
+  "query_type": "claims_by_doctor",
   "filters": {{
-    "specialty_any": ["rheumatology"],
-    "academic_only": true,
-    "has_linkedin": true
+    "name_contains": ["ANDREW GROSSBACH"]
   }},
-  "claims_filters": {{
-    "drugs_any": ["adalimumab", "infliximab", "etanercept", "rituximab", "ustekinumab"],
-    "cost_min": 1000,
-    "date_range_months": 12,
-    "negate": true
-  }},
-  "projection": ["npi", "name", "specialties", "affiliations", "linkedin"],
+  "claims_filters": {{}},
+  "projection": ["RX_CLAIM_NBR", "PATIENT_ID", "SERVICE_DATE_DD", "NDC_GENERIC_NM", "NDC_PREFERRED_BRAND_NM", "TOTAL_PAID_AMT", "PRESCRIBER_NPI_NBR"],
+  "order_by": ["SERVICE_DATE_DD DESC"],
   "limit": 100,
-  "plan_notes": "Academic rheumatologists with LinkedIn who avoided expensive biologics in last year"
+  "plan_notes": "Find Dr. ANDREW GROSSBACH in HCP data, get their NPI, then return all their prescription claims"
 }}
 
-Query: "Doctors who prescribed both Humira and Rinvoq in Medicare patients in the last 3 months"
-Response:
+Query: "Doctors with claims covered by CVS pharmacies"
 {{
+  "query_type": "hcp_with_claims",
   "filters": {{}},
   "claims_filters": {{
-    "drugs_all": ["adalimumab", "humira", "upadacitinib", "rinvoq"],
-    "payer_types": ["medicare"],
-    "date_range_months": 3,
-    "prescription_count_min": 1
+    "pharmacy_any": ["CVS"]
   }},
-  "projection": ["npi", "name", "specialties", "total_prescriptions", "unique_patients"],
-  "order_by": ["total_prescriptions DESC"],
+  "projection": ["npi", "name", "specialties", "states"],
+  "order_by": ["name ASC"],
   "limit": 50,
-  "plan_notes": "Doctors prescribing both Humira and Rinvoq to Medicare patients in last 3 months"
+  "plan_notes": "Find claims at CVS pharmacies, get prescriber NPIs, then return matching doctors from HCP data"
 }}
 
-Query: "Community practice doctors in rural states with more than 20 publications"
-Response:
+Query: "Show all Mounjaro claims in last 6 months"
 {{
-  "filters": {{
-    "community_only": true,
-    "rural_states_only": true,
-    "publications_min": 21
-  }},
-  "claims_filters": null,
-  "projection": ["npi", "name", "specialties", "states", "num_publications", "org_type"],
-  "order_by": ["num_publications DESC"],
-  "limit": 100,
-  "plan_notes": "Community practice doctors in rural states with 20+ publications"
-}}
-
-Query: "Doctors who have published research on Alzheimer's Disease"
-Response:
-{{
-  "filters": {{
-    "text_search": "alzheimer"
-  }},
-  "claims_filters": null,
-  "projection": ["npi", "name", "specialties", "num_publications", "conditions"],
-  "order_by": ["num_publications DESC"],
-  "limit": 100,
-  "plan_notes": "Doctors with Alzheimer's disease research publications"
-}}
-
-Query: "Top 5% of doctors by clinical trials who prescribed Skyrizi at least 10 times"
-Response:
-{{
-  "filters": {{
-    "top_percentile_trials": 5
-  }},
-  "claims_filters": {{
-    "drugs_any": ["risankizumab", "skyrizi"],
-    "prescription_count_min": 10
-  }},
-  "analytics": {{"calculate_rankings": true}},
-  "projection": ["npi", "name", "specialties", "num_clinical_trials", "total_prescriptions", "trial_rank"],
-  "order_by": ["num_clinical_trials DESC"],
-  "limit": 50,
-  "plan_notes": "Top 5% doctors by clinical trials who prescribed Skyrizi 10+ times"
-}}
-
-Query: "Endocrinologists who never prescribed Mounjaro but prescribed other GLP-1 agonists"
-Response:
-{{
-  "filters": {{
-    "specialty_any": ["endocrinology"]
-  }},
-  "claims_filters": {{
-    "drugs_any": ["semaglutide", "ozempic", "dulaglutide", "trulicity", "liraglutide"],
-    "drugs_exclude": ["tirzepatide", "mounjaro"],
-    "prescription_count_min": 1
-  }},
-  "projection": ["npi", "name", "specialties", "total_prescriptions", "unique_patients"],
-  "order_by": ["total_prescriptions DESC"],
-  "limit": 100,
-  "plan_notes": "Endocrinologists who prescribed GLP-1s but avoided Mounjaro"
-}}
-
-Query: "Doctors with Twitter profiles who are key opinion leaders in immunology"
-Response:
-{{
-  "filters": {{
-    "has_twitter": true,
-    "specialty_any": ["immunology", "rheumatology", "dermatology"],
-    "publications_min": 50,
-    "clinical_trials_min": 5
-  }},
-  "claims_filters": null,
-  "analytics": {{"calculate_scores": true}},
-  "projection": ["npi", "name", "specialties", "num_publications", "num_clinical_trials", "twitter", "composite_score"],
-  "order_by": ["composite_score DESC"],
-  "limit": 25,
-  "plan_notes": "Twitter-active key opinion leaders in immunology (50+ pubs, 5+ trials)"
-}}
-
-Query: "Average prescription costs by specialty for biologics in Q1 2023"
-Response:
-{{
+  "query_type": "claims_only",
   "filters": {{}},
   "claims_filters": {{
-    "drug_classes_any": ["biologics"],
-    "year": 2023,
-    "quarter": 1
+    "drug_any": ["Mounjaro", "Tirzepatide"],
+    "date_range_months": 6
   }},
-  "aggregation": {{
-    "group_by": ["specialties"],
-    "count_doctors": true
-  }},
-  "projection": ["specialties", "doctor_count", "avg_cost_per_prescription", "total_prescriptions"],
-  "order_by": ["avg_cost_per_prescription DESC"],
-  "limit": 20,
-  "plan_notes": "Average biologic costs by specialty in Q1 2023"
-}}
-
-Query: "Doctors affiliated with Mayo Clinic or Cleveland Clinic with more than 100 publications"
-Response:
-{{
-  "filters": {{
-    "text_search": ["mayo clinic", "cleveland clinic"],
-    "publications_min": 101
-  }},
-  "claims_filters": null,
-  "projection": ["npi", "name", "specialties", "affiliations", "num_publications"],
-  "order_by": ["num_publications DESC"],
-  "limit": 50,
-  "plan_notes": "Mayo Clinic or Cleveland Clinic doctors with 100+ publications"
+  "projection": ["RX_CLAIM_NBR", "SERVICE_DATE_DD", "NDC_GENERIC_NM", "NDC_PREFERRED_BRAND_NM", "TOTAL_PAID_AMT", "PRESCRIBER_NPI_NBR"],
+  "order_by": ["SERVICE_DATE_DD DESC"],
+  "limit": 200,
+  "plan_notes": "Direct query on Claims data for Mounjaro prescriptions in last 6 months"
 }}
 
 ---------------------
-DATA DICTIONARY
+HCP DATA DICTIONARY
 ---------------------
 {DATA_DICTIONARY_PROVIDERS}
+
+---------------------
+CLAIMS DATA DICTIONARY  
+---------------------
+{DATA_DICTIONARY_CLAIMS}
 
 ---------------------
 PLAN SCHEMA

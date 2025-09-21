@@ -94,7 +94,6 @@ def run_test_queries():
         try:
             json_plan = agent.process_message(query)
             
-            # Extract JSON
             if "```json" in json_plan:
                 json_start = json_plan.find("```json") + 7
                 json_end = json_plan.find("```", json_start)
